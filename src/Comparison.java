@@ -54,6 +54,10 @@ public class Comparison {
 		
 		//First Line Headings
 		List<String> headingASO;
+		
+		//
+		ArrayList<List<String>> dataASO = new ArrayList<List<String>>();
+		
 		//HashMap
 		HashMap<String, Integer> hmASO = new HashMap<String, Integer>();
 		
@@ -64,17 +68,17 @@ public class Comparison {
 		{
 			String st = asoObj.nextLine();
 			st = st.trim();
-			ArrayList<List<String>> dataASO = new ArrayList<List<String>>();
 			dataASO.add(Arrays.asList(st.split(",",-1)));
 		}
 		
 		
 		for(List<String> ls: dataASO)
 		{
-			for(String sASO: ls)
-			{
-				
-			}
+			String temp = ls.get(destPosASO);
+			int len = temp.length();
+			String corpCode = temp.substring(len-5, len-1);
+			String key = ls.get(upcPosASO) +  corpCode;
+			hmASO.put(key, ls.get(qtyPosASO));
 		}
 
 	}
