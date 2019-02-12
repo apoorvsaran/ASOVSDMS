@@ -7,79 +7,81 @@ import java.util.Scanner;
 public class Comparison {
 
 	public static void main(String[] args) throws FileNotFoundException {
-		
-		File f = new File("C:\\Users\\Apoorv\\Downloads\\Office\\ASO.txt");
-		
-		int upcPos=1;
-		int corpPos=4;
-		int qtyPos=5;
-		
-		Scanner dmsObj = new Scanner(f);
-		List<String> headings;
-		ArrayList<List<String>> dataDMS = new ArrayList<List<String>>();
-		
-		String s = dmsObj.nextLine();
-		headings = (Arrays.asList(s.split(",")));
-		int l = 0;
-		
-		while(dmsObj.hasNextLine())
-		{
-			s = dmsObj.nextLine();
-			s = s.trim();
-			l = s.length();
-			dataDMS.add(Arrays.asList(s.split(",", -1)));
-		}
-		
-		HashMap<String, Integer> hmDMS = new HashMap<String, Integer>();
-		for(List<String> g: dataDMS)
-		{
-			if(g.get(0).equalsIgnoreCase("BR"))
-			{
-				String d = ""+Integer.parseInt(g.get(upcPos)) + g.get(corpPos);
-				if(g.get(qtyPos).equals(""))
-				{
-					hmDMS.put(d, 0);
-					System.out.println(d+" "+0);
-				}
-				else
-				{
-					hmDMS.put(d, Integer.parseInt(g.get(qtyPos)));
-					System.out.println(d+" "+Integer.parseInt(g.get(qtyPos)));
-				}
+
+		// DMS File conversion Part
+
+		File DMSFile = new File("C:\\Users\\Apoorv\\Downloads\\Office\\ASO.txt");
+		Scanner dmsObj = new Scanner(DMSFile);
+		List<String> headingDMS;
+
+		// HashMap of DMS Data
+		HashMap<String, HashMap<String, Integer>> dataDMS = new HashMap<String, HashMap<String, Integer>>();
+
+		// Get the Headings in a headings ArrayList
+		String dmsLine = dmsObj.nextLine();
+		dmsLine = dmsLine.trim();
+		headingDMS = (Arrays.asList(dmsLine.split(",", -1)));
+
+		// List of DMS-data-in-a-line
+		List<String> dmsLineAL;
+
+		// Position of data in List
+		int dmsDepotPos = 0;
+		int dmsUpcPos = 1;
+		int dmsCorpPos = 4;
+		int dmsQtyPos = 5;
+		String dmsDepot, dmsUpc, dmsCorp;
+		int dmsQty;
+
+		// Looping through the DMS Data
+		while (dmsObj.hasNextLine()) {
+			dmsLine = dmsObj.nextLine();
+			dmsLine = dmsLine.trim();
+			dmsLineAL = Arrays.asList(dmsLine.split(",", -1));
+
+			// Populating Variables
+			dmsDepot = dmsLineAL.get(dmsDepotPos);
+			dmsUpc = dmsLineAL.get(dmsUpcPos);
+			dmsCorp = dmsLineAL.get(dmsCorpPos);
+			dmsQty = Integer.parseInt(dmsLineAL.get(dmsQtyPos));
+
+			// Defining key and value pair for the depot in consideration
+			String key = dmsUpc + dmsCorp;
+			int value = dmsQty;
+
+			if (dataDMS.containsKey(dmsDepot)) {
+				dataDMS.get(dmsDepot).put(key, value);
+			} else {
+				dataDMS.put(dmsDepot, new HashMap<String, Integer>());
+				dataDMS.get(dmsDepot).put(key, value);
 			}
 		}
-		
+		dmsObj.close();
+
+		// ASO File Conversion Part
+
 		File ASOFile = new File("C:\\Users\\Apoorv\\Downloads\\Office\\ASO.txt");
 		Scanner asoObj = new Scanner(ASOFile);
-		
-		//First Line Headings
 		List<String> headingASO;
-		
-		//
-		ArrayList<List<String>> dataASO = new ArrayList<List<String>>();
-		
-		//HashMap
-		HashMap<String, Integer> hmASO = new HashMap<String, Integer>();
-		
+
+		// HashMap of DMS Data
+		HashMap<String, HashMap<String, Integer>> dataASO = new HashMap<String, HashMap<String, Integer>>();
+
+		// Get the Headings in a headings ArrayList
 		String asoLine = asoObj.nextLine();
-		headingASO = Arrays.asList(asoLine.split(",",-1));
-		
-		while(asoObj.hasNextLine())
-		{
-			String st = asoObj.nextLine();
-			st = st.trim();
-			dataASO.add(Arrays.asList(st.split(",",-1)));
-		}
-		
-		
-		for(List<String> ls: dataASO)
-		{
-			String temp = ls.get(destPosASO);
-			int len = temp.length();
-			String corpCode = temp.substring(len-5, len-1);
-			String key = ls.get(upcPosASO) +  corpCode;
-			hmASO.put(key, ls.get(qtyPosASO));
-		}
+		asoLine = asoLine.trim();
+		headingDMS = (Arrays.asList(asoLine.split(",", -1)));
+
+		// List of DMS-data-in-a-line
+		List<String> asoLineAL;
+
+		// Position of data in List
+		int asoDepotPos = 0;
+		int asoUpcPos = 1;
+		int asoCorpPos = 4;
+		int asoQtyPos = 5;
+		String asoDepot, asoUpc, asoCorp;
+		int asoQty;
 
 	}
 
