@@ -13,7 +13,7 @@ public class Comparison {
 
 		// DMS File conversion Part
 
-		File DMSFile = new File("C:\\Users\\Apoorv\\Downloads\\Office\\ASO.txt");
+		File DMSFile = new File("D:\\Users\\1418690\\Documents\\ASOVSDMS\\DMS.txt");
 		Scanner dmsObj = new Scanner(DMSFile);
 		List<String> headingDMS;
 
@@ -63,26 +63,11 @@ public class Comparison {
 			}
 		}
 		
-		//Printing ASODATA
-		BufferedWriter writer = new BufferedWriter(new FileWriter("Hash.txt"));
-				for(HashMap.Entry<String, HashMap<String, Integer>> chkaso : dataDMS.entrySet())
-				{
-					//System.out.println(chkaso.getKey());
-					writer.write(chkaso.getKey());
-					writer.append('\n');
-					/*for(HashMap.Entry<String, Integer> inrchk: chkaso.getValue().entrySet())
-					{
-						System.out.println(inrchk.getKey()+" "+inrchk.getValue());
-					}*/
-				}
-				writer.close();
-		//Printing ASODATA
-		
 		dmsObj.close();
 
-		/*// ASO File Conversion Part
+		// ASO File Conversion Part
 
-		File ASOFile = new File("C:\\Users\\Apoorv\\Downloads\\Office\\ASO.txt");
+		File ASOFile = new File("D:\\Users\\1418690\\Documents\\ASOVSDMS\\aso_full.txt");
 		Scanner asoObj = new Scanner(ASOFile);
 		List<String> headingASO;
 
@@ -90,9 +75,9 @@ public class Comparison {
 		HashMap<String, HashMap<String, Integer>> dataASO = new HashMap<String, HashMap<String, Integer>>();
 
 		// Get the Headings in a headings ArrayList
-		String asoLine = asoObj.nextLine();
-		asoLine = asoLine.trim();
-		headingASO = (Arrays.asList(asoLine.split(",", -1)));
+		String asoLine;
+		//asoLine = asoLine.trim();
+		//headingASO = (Arrays.asList(asoLine.split(",", -1)));
 
 		// List of ASO-data-in-a-line
 		List<String> asoLineAL;
@@ -109,7 +94,7 @@ public class Comparison {
 		while (asoObj.hasNextLine()) {
 			asoLine = asoObj.nextLine();
 			asoLine = asoLine.trim();
-			asoLineAL = Arrays.asList(asoLine.split(",", -1));
+			asoLineAL = Arrays.asList(asoLine.split("\t", -1));
 
 			// Populating Variables
 			asoDepot = asoLineAL.get(asoDepotPos);
@@ -130,8 +115,21 @@ public class Comparison {
 			}
 		}
 		
-		
-		
+		/*//Printing ASODATA
+		BufferedWriter writer = new BufferedWriter(new FileWriter("Hash.txt"));
+				for(HashMap.Entry<String, HashMap<String, Integer>> chkaso : dataASO.entrySet())
+				{
+					//System.out.println(chkaso.getKey());
+					writer.write(chkaso.getKey());
+					writer.append('\n');
+					for(HashMap.Entry<String, Integer> inrchk: chkaso.getValue().entrySet())
+					{
+						System.out.println(inrchk.getKey()+" "+inrchk.getValue());
+					}
+				}
+				writer.close();
+		//Printing ASODATA
+*/		
 		asoObj.close();
 		
 		//Mapping
@@ -141,10 +139,20 @@ public class Comparison {
 		
 		while(mappingFileObj.hasNext())
 		{
+			//System.out.println(mappingFileObj.next());
 			String key = mappingFileObj.next(); //Depot ID
+			System.out.print(key+" = key, ");
 			String value = mappingFileObj.next(); //Depot Letters
+			//System.out.println(key+" "+value);
 			mapping.put(key, value);
 		}
+		
+		//printing map
+		for(HashMap.Entry<String, String> e: mapping.entrySet())
+		{
+			System.out.println(e.getKey()+" "+e.getValue());
+		}
+		//printing map
 		
 		//Comparison
 		long mtchRecordCount = 0;
@@ -193,7 +201,7 @@ public class Comparison {
 					else //Not matching DMS-Key & ASO-Key condition
 					{
 						mismtchRecordCount++;
-						String mismtchRecord = ""+hmEntriesAso.getKey()+" This UPC,corpCode combination from ASO is not present in DMS, with this ASOQTY="+hmEntriesAso.getValue();
+						String mismtchRecord = ""+dptInDms+" - "+hmEntriesAso.getKey()+" This UPC,corpCode combination from ASO is not present in DMS, with this ASOQTY="+hmEntriesAso.getValue();
 						writer.write(mismtchRecord);
 						writer.append('\n');
 					}
@@ -208,7 +216,7 @@ public class Comparison {
 		}
 		System.out.println(mtchAsoQty+" from ASO is matching with DMS Qty = "+mtchDmsQty);
 		System.out.println(mismtchAsoQty+" from ASO is not matching with DMS Qty = "+mismtchDmsQty);
-*/
+		writer.close();
 	}
 
 }
