@@ -46,7 +46,7 @@ public class Comparison {
 			dmsDepot = dmsLineAL.get(dmsDepotPos);
 			dmsUpc = dmsLineAL.get(dmsUpcPos);
 			dmsCorp = dmsLineAL.get(dmsCorpPos);
-			if(dmsLineAL.get(dmsQtyPos).equals(""))
+			if (dmsLineAL.get(dmsQtyPos).equals(""))
 				dmsQty = 0;
 			else
 				dmsQty = Integer.parseInt(dmsLineAL.get(dmsQtyPos));
@@ -62,22 +62,22 @@ public class Comparison {
 				dataDMS.get(dmsDepot).put(key, value);
 			}
 		}
-		
+
 		dmsObj.close();
 
 		// ASO File Conversion Part
-
 		File ASOFile = new File("D:\\Users\\1418690\\Documents\\ASOVSDMS\\aso_full.txt");
 		Scanner asoObj = new Scanner(ASOFile);
+		String asoLine;
 		List<String> headingASO;
 
 		// HashMap of ASO Data
 		HashMap<String, HashMap<String, Integer>> dataASO = new HashMap<String, HashMap<String, Integer>>();
 
 		// Get the Headings in a headings ArrayList
-		String asoLine;
-		//asoLine = asoLine.trim();
-		//headingASO = (Arrays.asList(asoLine.split(",", -1)));
+		asoLine = dmsObj.nextLine();
+		asoLine = asoLine.trim();
+		headingASO = (Arrays.asList(asoLine.split(",", -1)));
 
 		// List of ASO-data-in-a-line
 		List<String> asoLineAL;
@@ -100,7 +100,7 @@ public class Comparison {
 			asoDepot = asoLineAL.get(asoDepotPos);
 			asoUpc = asoLineAL.get(asoUpcPos);
 			asoCorp = asoLineAL.get(asoCorpPos);
-			asoCorp = asoCorp.substring(asoCorp.length()-5,asoCorp.length()-1);
+			asoCorp = asoCorp.substring(asoCorp.length() - 5, asoCorp.length() - 1);
 			asoQty = Integer.parseInt(asoLineAL.get(asoQtyPos));
 
 			// Defining key and value pair for the depot in consideration
@@ -114,108 +114,141 @@ public class Comparison {
 				dataASO.get(asoDepot).put(key, value);
 			}
 		}
-		
-		/*//Printing ASODATA
-		BufferedWriter writer = new BufferedWriter(new FileWriter("Hash.txt"));
-				for(HashMap.Entry<String, HashMap<String, Integer>> chkaso : dataASO.entrySet())
-				{
-					//System.out.println(chkaso.getKey());
-					writer.write(chkaso.getKey());
-					writer.append('\n');
-					for(HashMap.Entry<String, Integer> inrchk: chkaso.getValue().entrySet())
-					{
-						System.out.println(inrchk.getKey()+" "+inrchk.getValue());
-					}
-				}
-				writer.close();
-		//Printing ASODATA
-*/		
+
 		asoObj.close();
-		
-		//Mapping
+
+		// Mapping
 		File depotMappingFile = new File("DepotMapping.txt");
 		Scanner mappingFileObj = new Scanner(depotMappingFile);
 		HashMap<String, String> mapping = new HashMap<String, String>();
-		
-		while(mappingFileObj.hasNext())
-		{
-			//System.out.println(mappingFileObj.next());
-			String key = mappingFileObj.next(); //Depot ID
-			System.out.print(key+" = key, ");
-			String value = mappingFileObj.next(); //Depot Letters
-			//System.out.println(key+" "+value);
+
+		while (mappingFileObj.hasNext()) {
+			String key = mappingFileObj.next(); // Depot ID
+			String value = mappingFileObj.next(); // Depot Letters
 			mapping.put(key, value);
 		}
-		
-		//printing map
-		for(HashMap.Entry<String, String> e: mapping.entrySet())
-		{
-			System.out.println(e.getKey()+" "+e.getValue());
-		}
-		//printing map
-		
-		//Comparison
+
+		// Comparison
 		long mtchRecordCount = 0;
 		long mismtchRecordCount = 0;
-		long mtchAsoQty = 0; long mismtchAsoQty = 0;
-		long mtchDmsQty = 0; long mismtchDmsQty = 0;
-		
-		//Create mismatch File beforehand
+		long mtchAsoQty = 0;
+		long mismtchAsoQty = 0;
+		long mtchDmsQty = 0;
+		long mismtchDmsQty = 0;
+		long AsoSum = 0;
+		long DmsSum = 0;
+		long temp = 0;
+		long temp1 = 0;
+
+		// Create mismatch File beforehand
 		String mismtchFilePath = "MismatchReport.txt";
 		BufferedWriter writer = new BufferedWriter(new FileWriter(mismtchFilePath));
-		
-		for(HashMap.Entry<String, HashMap<String, Integer>> hmEntriesDataASO: dataASO.entrySet())
-		{
-			if(mapping.containsKey(hmEntriesDataASO.getKey()))
-			{
-				String dptInAso = hmEntriesDataASO.getKey();
-				String dptInDms = mapping.get(dptInAso);
-				
+
+		// Matching-Mismatching for the depots
+		HashMap<String, ArrayList<Long>> depotAndQty = new HashMap<String, ArrayList<Long>>();
+
+		for (HashMap.Entry<String, HashMap<String, Integer>> hmEntriesDataASO : dataASO.entrySet()) {
+			if (mapping.containsKey(hmEntriesDataASO.getKey())) {
+				String dptInAso = hmEntriesDataASO.getKey(); // 5012068051738,
+																// 5012068052124,
+																// 5012068052810...
+				String dptInDms = mapping.get(dptInAso); // ASO Depot ID
+															// converted to
+															// BB,BD,DV...
+
 				HashMap<String, Integer> hmEntriesDms = dataDMS.get(dptInDms);
-				
-				for(HashMap.Entry<String, Integer> hmEntriesAso: hmEntriesDataASO.getValue().entrySet())
-				{
-					
-					if(hmEntriesDms.containsKey(hmEntriesAso.getKey())) //Matching DMS-Key & ASO-Key condition
+				depotAndQty.put(dptInDms, new ArrayList<Long>()); // Depot(Key)
+																	// and
+																	// ArrayList<MatchingQty,
+																	// MisMatchingQty
+																	// from ASO,
+																	// MisMatchingQty
+																	// from DMS>
+
+				depotAndQty.get(dptInDms).add(0L); // Initialising for matching
+													// Qty
+				depotAndQty.get(dptInDms).add(0L); // Initialising for
+													// misMatching Qty from ASO
+				depotAndQty.get(dptInDms).add(0L); // Initialising for
+													// misMatching Qty from DMS
+
+				for (HashMap.Entry<String, Integer> hmEntriesAso : hmEntriesDataASO.getValue().entrySet()) {
+
+					if (hmEntriesDms.containsKey(hmEntriesAso.getKey())) // Matching
+																			// DMS-Key
+																			// &
+																			// ASO-Key
+																			// condition
 					{
 						int DMSQTY = hmEntriesDms.get(hmEntriesAso.getKey());
 						int ASOQTY = hmEntriesAso.getValue();
-						if(DMSQTY==ASOQTY)//DMSQTY==ASOQTY
+						DmsSum += DMSQTY;
+						AsoSum += ASOQTY;
+						if (DMSQTY == ASOQTY)// DMSQTY==ASOQTY
 						{
 							mtchDmsQty += DMSQTY;
 							mtchAsoQty += ASOQTY;
 							mtchRecordCount++;
+							temp = depotAndQty.get(dptInDms).get(0);
+							depotAndQty.get(dptInDms).set(0, temp + ASOQTY); // setting
+																				// Matching
+																				// sum
+																				// Qty
 							continue;
-						}
-						else
-						{
+						} else {
 							mismtchDmsQty += DMSQTY;
 							mismtchAsoQty += ASOQTY;
 							mismtchRecordCount++;
-							String mismtchRecord = ""+dptInDms+" "+hmEntriesAso.getKey()+" DMS="+DMSQTY+" & ASO="+ASOQTY;
-							
+
+							temp = depotAndQty.get(dptInDms).get(1);
+							depotAndQty.get(dptInDms).set(1, temp + ASOQTY); // setting
+																				// Qty
+																				// from
+																				// ASO
+
+							temp1 = depotAndQty.get(dptInDms).get(2);
+							depotAndQty.get(dptInDms).set(2, temp1 + DMSQTY); // setting
+																				// Qty
+																				// from
+																				// DMS
+
+							String mismtchRecord = "" + dptInDms + " upc=" + hmEntriesAso.getKey().substring(0, 8)
+									+ ", corp=" + hmEntriesAso.getKey().substring(8, 12) + " DMS=" + DMSQTY + " & ASO="
+									+ ASOQTY;
+
 							writer.write(mismtchRecord);
 							writer.append('\n');
 						}
-					}
-					else //Not matching DMS-Key & ASO-Key condition
+					} else // Not matching DMS-Key & ASO-Key condition
 					{
 						mismtchRecordCount++;
-						String mismtchRecord = ""+dptInDms+" - "+hmEntriesAso.getKey()+" This UPC,corpCode combination from ASO is not present in DMS, with this ASOQTY="+hmEntriesAso.getValue();
+						String mismtchRecord = "" + dptInDms + " - upc=" + hmEntriesAso.getKey().substring(0, 8)
+								+ ", corp=" + hmEntriesAso.getKey().substring(8, 12)
+								+ " This UPC,corpCode combination from ASO is not present in DMS, with this ASOQTY="
+								+ hmEntriesAso.getValue();
 						writer.write(mismtchRecord);
 						writer.append('\n');
 					}
 				}
-			}
-			else
-			{
-				String mismtchKey = ""+hmEntriesDataASO.getKey()+" - This key(depotId) from ASO is not present in Mapping file";
+			} else {
+				String mismtchKey = "" + hmEntriesDataASO.getKey()
+						+ " - This key(depotId) from ASO is not present in Mapping file";
 				writer.write(mismtchKey);
 				writer.append('\n');
 			}
 		}
-		System.out.println(mtchAsoQty+" from ASO is matching with DMS Qty = "+mtchDmsQty);
-		System.out.println(mismtchAsoQty+" from ASO is not matching with DMS Qty = "+mismtchDmsQty);
+		System.out.println(mtchAsoQty + " from ASO is matching with DMS Qty = " + mtchDmsQty);
+		System.out.println(mismtchAsoQty + " from ASO is not matching with DMS Qty = " + mismtchDmsQty);
+		System.out.println("ASO-SUM = " + AsoSum);
+		System.out.println("DMS-SUM = " + DmsSum);
+		for (HashMap.Entry<String, ArrayList<Long>> daq : depotAndQty.entrySet()) {
+			System.out.print(daq.getKey() + " - Matching=" + daq.getValue().get(0));
+			if (daq.getValue().get(1) != 0)
+				System.out.print(", Qty in ASO =" + daq.getValue().get(1));
+			if (daq.getValue().get(2) != 0)
+				System.out.print(", Qty in DMS =" + daq.getValue().get(2));
+			System.out.println();
+		}
 		writer.close();
 	}
 
